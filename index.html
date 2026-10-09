@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dinesh Gurung · Full‑Stack Developer</title>
+  <!-- Google Fonts: Playfair Display & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+  <!-- Tailwind via CDN (v4 edge, but we use utility classes with arbitrary values) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            alabaster: '#F9F8F6',
+            charcoal: '#1A1A1A',
+            taupe: '#EBE5DE',
+            warmgrey: '#6C6863',
+            gold: '#D4AF37',
+          },
+          transitionTimingFunction: {
+            'lux': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(4px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.4s ease-out forwards',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Paper noise texture (SVG data URI) */
+    .noise-overlay {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 250px 250px;
+    }
+
+    /* Vertical text for editorial labels */
+    .vertical-text {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+    }
+
+    /* Drop cap */
+    .dropcap::first-letter {
+      font-family: 'Playfair Display', serif;
+      float: left;
+      font-size: 4.5rem;
+      line-height: 0.8;
+      margin-right: 0.75rem;
+      font-weight: 400;
+      color: #1A1A1A;
+    }
+
+    /* Grayscale image base */
+    .grayscale-img {
+      filter: grayscale(1);
+      transition: filter 1800ms cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 1800ms cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 700ms ease-out;
+    }
+    .group:hover .grayscale-img {
+      filter: grayscale(0);
+      transform: scale(1.03);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    /* Gold sliding button */
+    .btn-primary {
+      position: relative;
+      overflow: hidden;
+      background-color: #1A1A1A;
+      transition: box-shadow 500ms ease-out;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+    .btn-primary .gold-overlay {
+      position: absolute;
+      inset: 0;
+      background-color: #D4AF37;
+      transform: translateX(-100%);
+      transition: transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 0;
+    }
+    .btn-primary:hover .gold-overlay {
+      transform: translateX(0);
+    }
+    .btn-primary .btn-content {
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Inner border for images */
+    .inner-border {
+      box-shadow: inset 0 0 0 1px rgba(26,26,26,0.06);
+    }
+
+    /* Grid lines fixed */
+    .grid-line {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background-color: rgba(26,26,26,0.2);
+      z-index: 40;
+      pointer-events: none;
+    }
+
+    /* Custom focus */
+    .focus-gold:focus-visible {
+      outline: none;
+      border-color: #D4AF37;
+    }
+
+    /* Underline-only inputs */
+    input, textarea {
+      border-bottom: 1px solid #1A1A1A;
+      background: transparent;
+      transition: border-color 500ms ease-out;
+    }
+    input:focus, textarea:focus {
+      border-bottom-color: #D4AF37;
+      outline: none;
+    }
+    input::placeholder, textarea::placeholder {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: #6C6863;
+      opacity: 0.7;
+    }
+
+    /* FAQ interaction */
+    .faq-item:hover .faq-icon {
+      transform: rotate(90deg);
+      border-color: #D4AF37;
+    }
+    .faq-icon {
+      transition: transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 500ms ease-out;
+    }
+
+    /* Testimonial hover */
+    .testimonial-card {
+      transition: border-left-color 500ms ease-out, padding-left 500ms ease-out;
+    }
+    .testimonial-card:hover {
+      border-left-color: #D4AF37;
+      padding-left: 2rem;
+    }
+    .testimonial-card:hover .avatar-img {
+      filter: grayscale(0);
+    }
+    .testimonial-card:hover .author-name {
+      color: #D4AF37;
+    }
+    .testimonial-card:hover .star-icon {
+      transform: scale(1.1);
+    }
+    .avatar-img {
+      filter: grayscale(1);
+      transition: filter 1500ms ease-out;
+    }
+    .star-icon {
+      transition: transform 500ms ease-out;
+    }
+    .author-name {
+      transition: color 500ms ease-out;
+    }
+
+    /* Blog card shadow evolution */
+    .blog-card {
+      transition: box-shadow 700ms ease-out;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .blog-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-alabaster text-charcoal font-sans antialiased relative overflow-x-hidden">
+
+  <!-- Paper noise overlay -->
+  <div class="fixed inset-0 noise-overlay pointer-events-none z-50"></div>
+
+  <!-- Fixed vertical grid lines (4 lines) -->
+  <div class="grid-line" style="left: 0;"></div>
+  <div class="grid-line" style="left: 33.33%;"></div>
+  <div class="grid-line" style="left: 66.66%;"></div>
+  <div class="grid-line" style="right: 0;"></div>
+
+  <!-- HEADER / NAVIGATION -->
+  <header class="relative z-50 border-b border-charcoal/10">
+    <div class="max-w-[1600px] mx-auto px-8 md:px-16 flex items-center justify-between h-24">
+      <div class="font-serif text-2xl tracking-tight text-charcoal">
+        Dinesh<span class="italic text-gold ml-1">Gurung</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-12 text-xs uppercase tracking-[0.25em] text-warmgrey">
+        <a href="#" class="hover:text-gold transition-colors duration-500">Work</a>
+        <a href="#" class="hover:text-gold transition-colors duration-500">About</a>
+        <a href="#" class="hover:text-gold transition-colors duration-500">Journal</a>
+        <a href="#" class="hover:text-gold transition-colors duration-500">Contact</a>
+      </nav>
+      <button class="md:hidden text-charcoal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO SECTION (asymmetric, bottom-left aligned) -->
+    <section class="relative min-h-[90vh] flex items-end pb-24 md:pb-32 px-8 md:px-16 border-b border-charcoal/10">
+      <div class="max-w-[1600px] mx-auto w-full">
+        <div class="grid grid-cols-12 gap-8 items-end">
+          <!-- left content: 7 columns, offset start 1 -->
+          <div class="col-span-12 md:col-span-7 md:col-start-1 relative z-10">
+            <div class="flex items-center gap-3 mb-6">
+              <span class="h-px w-12 bg-gold"></span>
+              <span class="text-[10px] uppercase tracking-[0.3em] text-warmgrey">Full‑Stack Developer · Nepal</span>
+            </div>
+            <h1 class="font-serif text-5xl md:text-9xl leading-[0.9] tracking-tight text-charcoal">
+              Crafting <span class="italic text-gold">digital</span><br>
+              experiences with<br>
+              precision.
+            </h1>
+            <p class="mt-8 text-base md:text-lg leading-relaxed text-warmgrey max-w-md">
+              I'm Dinesh Gurung — a full‑stack developer based in Kathmandu, building 
+              elegant, performant web applications from front to back. 
+              I believe in the beauty of restraint and the power of clean code.
+            </p>
+            <div class="mt-12 flex flex-wrap items-center gap-6">
+              <a href="#" class="btn-primary inline-flex items-center justify-center h-12 px-8 text-xs uppercase tracking-[0.2em] text-white font-medium">
+                <span class="gold-overlay"></span>
+                <span class="btn-content">View Work</span>
+              </a>
+              <a href="#" class="inline-flex items-center justify-center h-12 px-8 text-xs uppercase tracking-[0.2em] border border-charcoal text-charcoal hover:bg-charcoal hover:text-white transition-colors duration-500">
+                Get in Touch
+              </a>
+            </div>
+          </div>
+
+          <!-- right: vertical text + decorative line (desktop) -->
+          <div class="hidden md:block md:col-span-3 md:col-start-10 relative">
+            <div class="absolute -left-16 top-0 h-full w-px bg-charcoal/20"></div>
+            <div class="vertical-text text-[10px] uppercase tracking-[0.3em] text-warmgrey whitespace-nowrap">
+              Editorial / Portfolio Vol. 01
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELECTED WORK / PROJECTS (asymmetric grid, grayscale images) -->
+    <section class="py-24 md:py-32 px-8 md:px-16 border-b border-charcoal/10">
+      <div class="max-w-[1600px] mx-auto">
+        <div class="grid grid-cols-12 gap-8 mb-16">
+          <div class="col-span-12 md:col-span-5 md:col-start-2">
+            <span class="text-[10px] uppercase tracking-[0.3em] text-warmgrey">Selected Projects</span>
+            <h2 class="font-serif text-4xl md:text-6xl leading-[0.95] mt-4 text-charcoal">
+              The <span class="italic text-gold">Details</span>
+            </h2>
+          </div>
+          <div class="hidden md:block md:col-span-3 md:col-start-9 self-end">
+            <p class="text-sm leading-relaxed text-warmgrey">
+              A selection of recent work — from full‑stack platforms to 
+              refined front‑end interfaces.
+            </p>
+          </div>
+        </div>
+
+        <!-- project grid: 3 columns, first offset -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+          <!-- project 1 -->
+          <div class="group col-span-1 md:col-start-1">
+            <div class="relative overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)] inner-border">
+              <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1740&auto=format&fit=crop" 
+                   alt="Full-stack dashboard project" 
+                   class="grayscale-img w-full aspect-[3/4] object-cover">
+            </div>
+            <div class="mt-6 border-t border-charcoal pt-4">
+              <div class="flex justify-between items-baseline">
+                <h3 class="font-serif text-2xl text-charcoal">Aether Dashboard</h3>
+                <span class="text-[10px] uppercase tracking-[0.2em] text-warmgrey">2025</span>
+              </div>
+              <p class="text-sm text-warmgrey mt-2 leading-relaxed">Full‑stack analytics platform with real‑time data.</p>
+              <div class="mt-4 flex gap-4 text-[10px] uppercase tracking-[0.2em] text-warmgrey">
+                <span>React</span><span>Node</span><span>D3</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- project 2 (offset) -->
+          <div class="group col-span-1 md:col-start-2 md:mt-24">
+            <div class="relative overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)] inner-border">
+              <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1740&auto=format&fit=crop" 
+                   alt="E‑commerce platform" 
+                   class="grayscale-img w-full aspect-[3/4] object-cover">
+            </div>
+            <div class="mt-6 border-t border-charcoal pt-4">
+              <div class="flex justify-between items-baseline">
+                <h3 class="font-serif text-2xl text-charcoal">Pema Store</h3>
+                <span class="text-[10px] uppercase tracking-[0.2em] text-warmgrey">2024</span>
+              </div>
+              <p class="text-sm text-warmgrey mt-2 leading-relaxed">Artisanal e‑commerce with headless CMS.</p>
+              <div class="mt-4 flex gap-4 text-[10px] uppercase tracking-[0.2em] text-warmgrey">
+                <span>Next.js</span><span>Stripe</span><span>Sanity</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- project 3 (offset more) -->
+          <div class="group col-span-1 md:col-start-3 md:mt-12">
+            <div class="relative overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)] inner-border">
+              <img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=1740&auto=format&fit=crop" 
+                   alt="Developer tool" 
+                   class="grayscale-img w-full aspect-[3/4] object-cover">
+            </div>
+            <div class="mt-6 border-t border-charcoal pt-4">
+              <div class="flex justify-between items-baseline">
+                <h3 class="font-serif text-2xl text-charcoal">CodeCanvas</h3>
+                <span class="text-[10px] uppercase tracking-[0.2em] text-warmgrey">2024</span>
+              </div>
+              <p class="text-sm text-warmgrey mt-2 leading-relaxed">Collaborative code editor with live preview.</p>
+              <div class="mt-4 flex gap-4 text-[10px] uppercase tracking-[0.2em] text-warmgrey">
+                <span>Vue</span><span>Firebase</span><span>WebRTC</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT / SKILLS (dark section, inverted) -->
+    <section class="bg-charcoal text-alabaster py-24 md:py-32 px-8 md:px-16 border-b border-charcoal/20">
+      <div class="max-w-[1600px] mx-auto">
+        <div class="grid grid-cols-12 gap-8">
+          <!-- left: dropcap intro -->
+          <div class="col-span-12 md:col-span-5 md:col-start-1">
+            <span class="text-[10px] uppercase tracking-[0.3em] text-taupe/60">About</span>
+            <h2 class="font-serif text-4xl md:text-5xl leading-[1.1] mt-4 text-alabaster">
+              The <span class="italic text-gold">Process</span>
+            </h2>
+            <p class="dropcap text-base leading-relaxed text-taupe/80 mt-8">
+              I approach every project as a balance between engineering and artistry. 
+              Based in Nepal, I work with clients worldwide to build scalable, 
+              accessible, and visually refined digital products.
+            </p>
+          </div>
+
+          <!-- middle: skills / stack -->
+          <div class="col-span-12 md:col-span-3 md:col-start-7 mt-12 md:mt-0">
+            <h3 class="text-xs uppercase tracking-[0.3em] text-taupe/60 mb-6">Expertise</h3>
+            <ul class="space-y-4 text-sm text-taupe/80">
+              <li class="border-b border-taupe/20 pb-2">React / Next.js</li>
+              <li class="border-b border-taupe/20 pb-2">Node.js / Express</li>
+              <li class="border-b border-taupe/20 pb-2">TypeScript</li>
+              <li class="border-b border-taupe/20 pb-2">Tailwind CSS</li>
+              <li class="border-b border-taupe/20 pb-2">PostgreSQL / MongoDB</li>
+              <li class="border-b border-taupe/20 pb-2">AWS / Vercel</li>
+            </ul>
+          </div>
+
+          <!-- right: stats -->
+          <div class="col-span-12 md:col-span-2 md:col-start-11 mt-12 md:mt-0">
+            <div class="space-y-8">
+              <div>
+                <span class="font-serif text-4xl text-gold">6+</span>
+                <p class="text-[10px] uppercase tracking-[0.2em] text-taupe/60 mt-1">Years Experience</p>
+              </div>
+              <div>
+                <span class="font-serif text-4xl text-gold">40+</span>
+                <p class="text-[10px] uppercase tracking-[0.2em] text-taupe/60 mt-1">Projects Delivered</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS (editorial, left border, grayscale avatars) -->
+    <section class="py-24 md:py-32 px-8 md:px-16 border-b border-charcoal/10">
+      <div class="max-w-[1600px] mx-auto">
+        <div class="grid grid-cols-12 gap-8 mb-16">
+          <div class="col-span-12 md:col-span-5 md:col-start-2">
+            <span class="text-[10px] uppercase tracking-[0.3em] text-warmgrey">Kind Words</span>
+            <h2 class="font-serif text-4xl md:text-6xl leading-[0.95] mt-4 text-charcoal">
+              Curated <span class="italic text-gold">Excellence</span>
+            </h2>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+          <!-- testimonial 1 -->
+          <div class="testimonial-card border-l border-charcoal/20 pl-6 md:pl-8 transition-all duration-500">
+            <div class="flex items-center gap-1 mb-6">
+              <svg class="star-icon w-4 h-4 text-gold fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-icon w-4 h-4 text-gold fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-icon w-4 h-4 text-gold fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-icon w-4 h-4 text-gold fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-icon w-4 h-4 text-gold fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <p class="font-serif text-xl md:text-2xl leading-relaxed text-charcoal italic">
+              “Dinesh transformed our fragmented codebase into a cohesive, elegant platform. His attention to detail—both in architecture and interface—is exceptional.”
+            </p>
+            <div class="flex items-center gap-4 mt-8">
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop" 
+                   alt="Client portrait" 
+                   class="avatar-img w-12 h-12 object-cover rounded-none">
+              <div>
+                <p class="author-name text-sm font-medium text-charcoal">Ananya Sharma</p>
+                <p class="text-[10px] uppercase tracking-[0.2em] text-warmgrey">Product Lead, Aether</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- testimonial 2 -->
+          <div class="testimonial-card border-l border-charcoal/20 pl-6 md:pl-8 transition-all duration-500">
+            <div class="flex items-center gap-1 mb-6">
+              <svg class="star-icon w-4 h-4 text-gold fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-icon w-4 h-4 text-gold fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-icon w-4 h-4 text-gold fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-icon w-4 h-4 text-gold fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-icon w-4 h-4 text-gold fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <p class="font-serif text-xl md:text-2xl leading-relaxed text-charcoal italic">
+              “Rarely do you find a developer who understands both the backend complexity and the nuances of typography. Dinesh delivers on both fronts.”
+            </p>
+            <div class="flex items-center gap-4 mt-8">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop" 
+                   alt="Client portrait" 
+                   class="avatar-img w-12 h-12 object-cover rounded-none">
+              <div>
+                <p class="author-name text-sm font-medium text-charcoal">Rohan Thapa</p>
+                <p class="text-[10px] uppercase tracking-[0.2em] text-warmgrey">Founder, Pema Store</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- JOURNAL / BLOG (3 cards, shadow evolution) -->
+    <section class="py-24 md:py-32 px-8 md:px-16 border-b border-charcoal/10">
+      <div class="max-w-[1600px] mx-auto">
+        <div class="grid grid-cols-12 gap-8 mb-16">
+          <div class="col-span-12 md:col-span-5 md:col-start-2">
+            <span class="text-[10px] uppercase tracking-[0.3em] text-warmgrey">Journal</span>
+            <h2 class="font-serif text-4xl md:text-6xl leading-[0.95] mt-4 text-charcoal">
+              Notes on <span class="italic text-gold">Craft</span>
+            </h2>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- blog 1 -->
+          <article class="blog-card group bg-transparent">
+            <div class="overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.06)] inner-border">
+              <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=1740&auto=format&fit=crop" 
+                   alt="Code on screen" 
+                   class="grayscale-img w-full aspect-[4/5] object-cover">
+            </div>
+            <div class="mt-6 border-t border-charcoal pt-4">
+              <div class="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-warmgrey">
+                <span>March 12, 2025</span>
+                <span class="h-px w-6 bg-charcoal/30"></span>
+                <span>Engineering</span>
+              </div>
+              <h3 class="font-serif text-2xl mt-3 text-charcoal">The Art of Slow Motion in UI</h3>
+              <p class="text-sm text-warmgrey mt-2 leading-relaxed">Why deliberate animation creates a more premium experience.</p>
+            </div>
+          </article>
+
+          <!-- blog 2 -->
+          <article class="blog-card group bg-transparent">
+            <div class="overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.06)] inner-border">
+              <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1740&auto=format&fit=crop" 
+                   alt="Developer workspace" 
+                   class="grayscale-img w-full aspect-[4/5] object-cover">
+            </div>
+            <div class="mt-6 border-t border-charcoal pt-4">
+              <div class="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-warmgrey">
+                <span>Feb 5, 2025</span>
+                <span class="h-px w-6 bg-charcoal/30"></span>
+                <span>Design Systems</span>
+              </div>
+              <h3 class="font-serif text-2xl mt-3 text-charcoal">Building a Type‑Safe Design System</h3>
+              <p class="text-sm text-warmgrey mt-2 leading-relaxed">From tokens to components — a full‑stack approach.</p>
+            </div>
+          </article>
+
+          <!-- blog 3 -->
+          <article class="blog-card group bg-transparent">
+            <div class="overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.06)] inner-border">
+              <img src="https://images.unsplash.com/photo-1504639725590-34d0984388bd?q=80&w=1740&auto=format&fit=crop" 
+                   alt="Laptop with code" 
+                   class="grayscale-img w-full aspect-[4/5] object-cover">
+            </div>
+            <div class="mt-6 border-t border-charcoal pt-4">
+              <div class="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-warmgrey">
+                <span>Jan 18, 2025</span>
+                <span class="h-px w-6 bg-charcoal/30"></span>
+                <span>Performance</span>
+              </div>
+              <h3 class="font-serif text-2xl mt-3 text-charcoal">Optimizing for the Edge</h3>
+              <p class="text-sm text-warmgrey mt-2 leading-relaxed">Strategies for faster, more resilient web apps.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ (accordion micro-interactions) -->
+    <section class="py-24 md:py-32 px-8 md:px-16 border-b border-charcoal/10">
+      <div class="max-w-[1600px] mx-auto">
+        <div class="grid grid-cols-12 gap-8">
+          <div class="col-span-12 md:col-span-4 md:col-start-2">
+            <span class="text-[10px] uppercase tracking-[0.3em] text-warmgrey">FAQ</span>
+            <h2 class="font-serif text-4xl md:text-5xl leading-[1.1] mt-4 text-charcoal">
+              Common <span class="italic text-gold">Questions</span>
+            </h2>
+          </div>
+          <div class="col-span-12 md:col-span-6 md:col-start-7 mt-12 md:mt-0">
+            <div class="divide-y divide-charcoal/10">
+              <!-- faq item 1 -->
+              <div class="faq-item group py-6 cursor-pointer">
+                <div class="flex justify-between items-center">
+                  <h3 class="font-serif text-xl text-charcoal group-hover:text-gold transition-colors duration-500">What services do you offer?</h3>
+                  <div class="faq-icon w-8 h-8 border border-charcoal/30 flex items-center justify-center text-charcoal group-hover:border-gold transition-all duration-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </div>
+                </div>
+                <div class="faq-content hidden group-hover:block animate-fade-in mt-3 text-sm text-warmgrey leading-relaxed">
+                  I provide end‑to‑end full‑stack development: from UI/UX design and front‑end architecture to API development, database design, and cloud deployment.
+                </div>
+              </div>
+              <!-- faq item 2 -->
+              <div class="faq-item group py-6 cursor-pointer">
+                <div class="flex justify-between items-center">
+                  <h3 class="font-serif text-xl text-charcoal group-hover:text-gold transition-colors duration-500">Do you work with clients remotely?</h3>
+                  <div class="faq-icon w-8 h-8 border border-charcoal/30 flex items-center justify-center text-charcoal group-hover:border-gold transition-all duration-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </div>
+                </div>
+                <div class="faq-content hidden group-hover:block animate-fade-in mt-3 text-sm text-warmgrey leading-relaxed">
+                  Absolutely. I'm based in Kathmandu and collaborate with clients across the US, Europe, and Asia. All communication is async‑friendly.
+                </div>
+              </div>
+              <!-- faq item 3 -->
+              <div class="faq-item group py-6 cursor-pointer">
+                <div class="flex justify-between items-center">
+                  <h3 class="font-serif text-xl text-charcoal group-hover:text-gold transition-colors duration-500">What is your typical project timeline?</h3>
+                  <div class="faq-icon w-8 h-8 border border-charcoal/30 flex items-center justify-center text-charcoal group-hover:border-gold transition-all duration-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </div>
+                </div>
+                <div class="faq-content hidden group-hover:block animate-fade-in mt-3 text-sm text-warmgrey leading-relaxed">
+                  A typical MVP takes 4–6 weeks, while larger platforms can span 3–6 months. I provide a detailed roadmap after our initial call.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA / CONTACT (dark, generous space) -->
+    <section class="bg-charcoal text-alabaster py-24 md:py-32 px-8 md:px-16">
+      <div class="max-w-[1600px] mx-auto">
+        <div class="grid grid-cols-12 gap-8">
+          <div class="col-span-12 md:col-span-6 md:col-start-2">
+            <span class="text-[10px] uppercase tracking-[0.3em] text-taupe/60">Let's work together</span>
+            <h2 class="font-serif text-4xl md:text-7xl leading-[0.95] mt-4 text-alabaster">
+              Have a project<br>in <span class="italic text-gold">mind?</span>
+            </h2>
+          </div>
+          <div class="col-span-12 md:col-span-4 md:col-start-8 mt-12 md:mt-0 flex flex-col justify-end">
+            <p class="text-taupe/80 text-base leading-relaxed mb-8">
+              I'm currently available for freelance work and collaborations. 
+              Reach out and let's create something exceptional.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <input type="email" placeholder="Your email address" 
+                     class="h-12 px-0 text-sm text-alabaster placeholder-taupe/60 bg-transparent border-b border-taupe/40 focus:border-gold transition-colors duration-500 w-full">
+              <button class="btn-primary inline-flex items-center justify-center h-12 px-8 text-xs uppercase tracking-[0.2em] text-white font-medium whitespace-nowrap">
+                <span class="gold-overlay"></span>
+                <span class="btn-content">Send</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-alabaster py-12 px-8 md:px-16 border-t border-charcoal/10">
+    <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="font-serif text-xl tracking-tight text-charcoal">
+        Dinesh<span class="italic text-gold ml-1">Gurung</span>
+      </div>
+      <div class="flex gap-8 text-[10px] uppercase tracking-[0.2em] text-warmgrey">
+        <a href="#" class="hover:text-gold transition-colors duration-500">GitHub</a>
+        <a href="#" class="hover:text-gold transition-colors duration-500">LinkedIn</a>
+        <a href="#" class="hover:text-gold transition-colors duration-500">Twitter</a>
+      </div>
+      <p class="text-[10px] uppercase tracking-[0.2em] text-warmgrey">
+        © 2025 Dinesh Gurung — Kathmandu, Nepal
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
